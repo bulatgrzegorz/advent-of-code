@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Xunit;
 
 namespace adventOfCode2024;
@@ -76,7 +77,7 @@ public class Day1
         
         var secondCountLookup = second
             .CountBy(x => x)
-            .ToDictionary(x => x.Key, x => x.Value);
+            .ToImmutableDictionary(x => x.Key, x => x.Value);
         
         var similarity = 0;
         foreach (var x in first)
