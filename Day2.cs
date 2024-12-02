@@ -58,7 +58,7 @@ public class Day2
     [InlineData("1 1 2 9 9", false)]
     [InlineData("55 55 59 62 66", false)]
     [InlineData("16 19 16 13 12", true)]
-    
+    [InlineData("63 63 64 65 67 70 72", true)]
     public void SecondTests(string example, bool expected)
     {
         int[] a = [1, 2, 3];
@@ -129,12 +129,12 @@ public class Day2
             //if it's already end, just remove last index and everything will be fine
             if(i == report.Length - 1) return true;
 
-            //otherwise let's try removing elements one by one are try again
-            for (var j = 0; j < report.Length; j++)
+            //otherwise we will check other possibilities after removing some of the elements
+            for (var j = 0; j <= i; j++)
             {
                 if(IsReportSafe2([..report[..j], ..report[(j+1)..]], true)) return true;
             }
-            
+
             return false;
         }
         
