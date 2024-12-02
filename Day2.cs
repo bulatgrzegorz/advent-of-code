@@ -132,7 +132,7 @@ public class Day2
             //otherwise we will check other possibilities after removing some of the elements
             for (var j = 0; j <= i; j++)
             {
-                if(IsReportSafe2([..report[..j], ..report[(j+1)..]], true)) return true;
+                if(IsReportSafe2(ExcludeElement(report, j), true)) return true;
             }
 
             return false;
@@ -140,6 +140,12 @@ public class Day2
         
         return true;
     }
+
+    private static int[] ExcludeElement(Span<int> span, int index)
+    {
+        return [..span[..index], ..span[(index + 1)..]];
+    }
+        
 
     private static bool IsDiffCorrectSign(int diff, [DisallowNull] int? sign)
     {
