@@ -49,7 +49,7 @@ public class Day3
         var currentIndex = 0;
         while (true)
         {
-            currentIndex = IndexOf(input, MultiplyMarker, currentIndex);
+            currentIndex = input.IndexOf(MultiplyMarker, currentIndex);
             if(currentIndex < 0) break;
             
             currentIndex += MultiplyMarker.Length; 
@@ -82,7 +82,7 @@ public class Day3
         var currentDoIndex = 0;
         while (true)
         {
-            var currentMultiplyIndex = IndexOf(input, MultiplyMarker, currentIndex);
+            var currentMultiplyIndex = input.IndexOf(MultiplyMarker, currentIndex);
             if(currentMultiplyIndex < 0) break;
             
             var canProcessMultiply = CanProcessMultiply(input, currentMultiplyIndex, ref currentDontIndex, ref currentDoIndex);
@@ -115,12 +115,12 @@ public class Day3
         //------v---------v--------v-------
         //------*---------*--------*-------
         //we are looking for don'ts and do's between current multiply and last occurrence. Then we check which one was last 
-        var dontIndex = LastIndexOf(input, DontMarker, currentMultiplyIndex, currentMultiplyIndex - (currentDontIndex is -1 ? 0 : currentDontIndex));
+        var dontIndex = input.LastIndexOf(DontMarker, currentMultiplyIndex, currentMultiplyIndex - (currentDontIndex is -1 ? 0 : currentDontIndex));
         if(dontIndex > 0) currentDontIndex = dontIndex;
         
         if(currentDontIndex < 0 || currentDontIndex > currentMultiplyIndex) return true;
         
-        var doIndex = LastIndexOf(input, DoMarker, currentMultiplyIndex, currentMultiplyIndex - currentDoIndex);
+        var doIndex = input.LastIndexOf(DoMarker, currentMultiplyIndex, currentMultiplyIndex - currentDoIndex);
         if(doIndex > 0) currentDoIndex = doIndex;
         
         return currentDoIndex >= currentDontIndex;
@@ -145,29 +145,5 @@ public class Day3
         if (position < 0 || position >= input.Length) return null;
         
         return input[position];
-    }
-
-    private static int IndexOf(ReadOnlySpan<char> span, string value, int startIndex)
-    {
-        var indexInSlice = span[startIndex..].IndexOf(value);
-
-        if (indexInSlice == -1)
-        {
-            return -1;
-        }
-
-        return startIndex + indexInSlice;
-    }
-    
-    private static int LastIndexOf(ReadOnlySpan<char> span, string value, int startIndex, int count)
-    {
-        var indexInSlice = span[(startIndex-count)..startIndex].LastIndexOf(value);
-
-        if (indexInSlice == -1)
-        {
-            return -1;
-        }
-
-        return startIndex - count + indexInSlice;
     }
 }
