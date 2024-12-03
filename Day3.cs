@@ -22,7 +22,7 @@ public class Day3
     [Fact]
     public void First()
     {
-        var sum = CalculateSumOfMultiplies(File.ReadAllText(InputFile));
+        var sum = CalculateSumOfMultiplies(File.ReadAllText(InputFile).AsSpan());
 
         Assert.Equal(188741603, sum);
     }
@@ -43,30 +43,25 @@ public class Day3
         Assert.Equal(67269798, sum);
     }
 
-    private static int CalculateSumOfMultiplies(string input)
+    private static int CalculateSumOfMultiplies(ReadOnlySpan<char> input)
     {
-        Span<char> firstNumberBuffer = new char[3];
-        Span<char> secondNumberBuffer = new char[3];
         var sum = 0;
         var currentIndex = 0;
         while (true)
         {
-            firstNumberBuffer.Clear();
-            secondNumberBuffer.Clear();
-            
-            currentIndex = input.IndexOf(MultiplyMarker, currentIndex, StringComparison.Ordinal);
+            currentIndex = IndexOf(input, MultiplyMarker, currentIndex);
             if(currentIndex < 0) break;
             
             currentIndex += MultiplyMarker.Length; 
 
-            var firstNumber = GetNumber(input, ref currentIndex, firstNumberBuffer);
+            var firstNumber = GetNumber(input, ref currentIndex);
             if(firstNumber is null) continue;
             
             var maybeComma = GetCharFromStringAndProgress(input, currentIndex);
             if(maybeComma is not ',') continue;
             currentIndex++;
             
-            var secondNumber = GetNumber(input, ref currentIndex, secondNumberBuffer);
+            var secondNumber = GetNumber(input, ref currentIndex);
             if(secondNumber is null) continue;
             
             var maybeClosedBracket = GetCharFromStringAndProgress(input, currentIndex);
@@ -79,34 +74,29 @@ public class Day3
         return sum;
     }
     
-    private static int CalculateSumOfMultiplies2(string input)
-    {
-        Span<char> firstNumberBuffer = new char[3];
-        Span<char> secondNumberBuffer = new char[3];
+    private static int CalculateSumOfMultiplies2(ReadOnlySpan<char> input)
+    {;
         var sum = 0;
         var currentIndex = 0;
         var currentDontIndex = -1;
         var currentDoIndex = 0;
         while (true)
         {
-            firstNumberBuffer.Clear();
-            secondNumberBuffer.Clear();
-            
-            var currentMultiplyIndex = input.IndexOf(MultiplyMarker, currentIndex, StringComparison.Ordinal);
+            var currentMultiplyIndex = IndexOf(input, MultiplyMarker, currentIndex);
             if(currentMultiplyIndex < 0) break;
             
             var canProcessMultiply = CanProcessMultiply(input, currentMultiplyIndex, ref currentDontIndex, ref currentDoIndex);
             currentIndex = currentMultiplyIndex + MultiplyMarker.Length;
             if(!canProcessMultiply) continue;
 
-            var firstNumber = GetNumber(input, ref currentIndex, firstNumberBuffer);
+            var firstNumber = GetNumber(input, ref currentIndex);
             if(firstNumber is null) continue;
             
             var maybeComma = GetCharFromStringAndProgress(input, currentIndex);
             if(maybeComma is not ',') continue;
             currentIndex++;
             
-            var secondNumber = GetNumber(input, ref currentIndex, secondNumberBuffer);
+            var secondNumber = GetNumber(input, ref currentIndex);
             if(secondNumber is null) continue;
             
             var maybeClosedBracket = GetCharFromStringAndProgress(input, currentIndex);
@@ -119,44 +109,65 @@ public class Day3
         return sum;
     }
     
-    private static bool CanProcessMultiply(string input, int currentMultiplyIndex, ref int currentDontIndex, ref int currentDoIndex)
+    private static bool CanProcessMultiply(ReadOnlySpan<char> input, int currentMultiplyIndex, ref int currentDontIndex, ref int currentDoIndex)
     {
-        var dontIndex = input.LastIndexOf(DontMarker, currentMultiplyIndex, currentMultiplyIndex - (currentDontIndex is -1 ? 0 : currentDontIndex), StringComparison.Ordinal);
+        //------don't-----do-------mul--------
+        //------v---------v--------v-------
+        //------*---------*--------*-------
+        //we are looking for don'ts and do's between current multiply and last occurrence. Then we check which one was last 
+        var dontIndex = LastIndexOf(input, DontMarker, currentMultiplyIndex, currentMultiplyIndex - (currentDontIndex is -1 ? 0 : currentDontIndex));
         if(dontIndex > 0) currentDontIndex = dontIndex;
         
         if(currentDontIndex < 0 || currentDontIndex > currentMultiplyIndex) return true;
-        //------don't----------------------
-        //------v--------------------------
-        //------*----------m---------------
         
-        //we have some don't in between
-        
-        var doIndex = input.LastIndexOf(DoMarker, currentMultiplyIndex, currentMultiplyIndex - currentDoIndex, StringComparison.Ordinal);
+        var doIndex = LastIndexOf(input, DoMarker, currentMultiplyIndex, currentMultiplyIndex - currentDoIndex);
         if(doIndex > 0) currentDoIndex = doIndex;
         
         return currentDoIndex >= currentDontIndex;
     }
 
-    private static int? GetNumber(string input, ref int currentIndex, Span<char> firstNumberBuffer)
+    private static int? GetNumber(ReadOnlySpan<char> input, ref int currentIndex)
     {
-        var numberIndex = 0;
+        var startingIndex = currentIndex;
         while (true)
         {
             var nextChar = GetCharFromStringAndProgress(input, currentIndex);
             if (!nextChar.HasValue || !char.IsDigit(nextChar.Value)) break;
 
             currentIndex++;
-            firstNumberBuffer[numberIndex] = nextChar.Value;
-            numberIndex++;
         }
 
-        return int.TryParse(firstNumberBuffer, out var result) ? result : null;
+        return currentIndex > startingIndex && int.TryParse(input[startingIndex..currentIndex], out var result) ? result : null;
     }
 
-    private static char? GetCharFromStringAndProgress(string input, int position)
+    private static char? GetCharFromStringAndProgress(ReadOnlySpan<char> input, int position)
     {
         if (position < 0 || position >= input.Length) return null;
         
         return input[position];
+    }
+
+    private static int IndexOf(ReadOnlySpan<char> span, string value, int startIndex)
+    {
+        var indexInSlice = span[startIndex..].IndexOf(value);
+
+        if (indexInSlice == -1)
+        {
+            return -1;
+        }
+
+        return startIndex + indexInSlice;
+    }
+    
+    private static int LastIndexOf(ReadOnlySpan<char> span, string value, int startIndex, int count)
+    {
+        var indexInSlice = span[(startIndex-count)..startIndex].LastIndexOf(value);
+
+        if (indexInSlice == -1)
+        {
+            return -1;
+        }
+
+        return startIndex - count + indexInSlice;
     }
 }
