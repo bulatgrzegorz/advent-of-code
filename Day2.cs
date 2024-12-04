@@ -1,19 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace adventOfCode2024;
 
 public class Day2
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public Day2(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
-
     private const string InputFile = "Day2.txt";
     private const string ExampleInput = """
                                         7 6 4 2 1
@@ -61,10 +52,6 @@ public class Day2
     [InlineData("63 63 64 65 67 70 72", true)]
     public void SecondTests(string example, bool expected)
     {
-        int[] a = [1, 2, 3];
-        var b = a[..1];
-        var b2 = a[1..];
-        
         var report = example.Split(' ').Select(int.Parse).ToArray();
 
         Assert.Equal(expected, IsReportSafe2(report));
