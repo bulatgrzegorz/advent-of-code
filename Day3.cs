@@ -42,17 +42,14 @@ public class Day3
         var input = File.ReadAllText(InputFile);
         var on = true;
         var sum = 0;
-        foreach (Match match in Regex.Matches(input, @"do\(\)|don't\(\)|mul\(\d{1,3},\d{1,3}\)"))
+        foreach (Match match in Regex.Matches(input, @"do\(\)|don't\(\)|mul\((\d{1,3}),(\d{1,3})\)"))
         {
-            if (match.Value is "do()") on = true;
-            else if(match.Value is "don't()") on = false;
+            if (match.Value is DoMarker) on = true;
+            else if(match.Value is DontMarker) on = false;
             else if (on)
             {
-                var arguments = match.Value.AsSpan()[4..^1];
-                var comma = arguments.IndexOf(',');
-                
-                var x = int.Parse(arguments[..comma]);
-                var y = int.Parse(arguments[(comma + 1)..]);
+                var x = int.Parse(match.Groups[1].Value);
+                var y = int.Parse(match.Groups[2].Value);
                 sum += x * y;
             }
         }
@@ -78,21 +75,17 @@ public class Day3
             
             currentIndex += MultiplyMarker.Length; 
 
-            var firstNumber = GetNumber(input, ref currentIndex);
-            if(firstNumber is null) continue;
+            if(!GetNumber(input, ref currentIndex, out var firstNumber)) continue;
             
-            var maybeComma = GetCharFromStringAndProgress(input, currentIndex);
-            if(maybeComma is not ',') continue;
+            if(!GetChar(input, currentIndex, out var maybeComma) || maybeComma is not ',') continue;
             currentIndex++;
             
-            var secondNumber = GetNumber(input, ref currentIndex);
-            if(secondNumber is null) continue;
+            if(!GetNumber(input, ref currentIndex, out var secondNumber)) continue;
             
-            var maybeClosedBracket = GetCharFromStringAndProgress(input, currentIndex);
-            if(maybeClosedBracket is not ')') continue;
+            if(!GetChar(input, currentIndex, out var maybeClosedBracket) || maybeClosedBracket is not ')') continue;
             currentIndex++;
             
-            sum += firstNumber.Value * secondNumber.Value;
+            sum += firstNumber * secondNumber;
         }
 
         return sum;
@@ -113,21 +106,17 @@ public class Day3
             currentIndex = currentMultiplyIndex + MultiplyMarker.Length;
             if(!canProcessMultiply) continue;
 
-            var firstNumber = GetNumber(input, ref currentIndex);
-            if(firstNumber is null) continue;
+            if(!GetNumber(input, ref currentIndex, out var firstNumber)) continue;
             
-            var maybeComma = GetCharFromStringAndProgress(input, currentIndex);
-            if(maybeComma is not ',') continue;
+            if(!GetChar(input, currentIndex, out var maybeComma) || maybeComma is not ',') continue;
             currentIndex++;
             
-            var secondNumber = GetNumber(input, ref currentIndex);
-            if(secondNumber is null) continue;
+            if(!GetNumber(input, ref currentIndex, out var secondNumber)) continue;
             
-            var maybeClosedBracket = GetCharFromStringAndProgress(input, currentIndex);
-            if(maybeClosedBracket is not ')') continue;
+            if(!GetChar(input, currentIndex, out var maybeClosedBracket) || maybeClosedBracket is not ')') continue;
             currentIndex++;
             
-            sum += firstNumber.Value * secondNumber.Value;
+            sum += firstNumber * secondNumber;
         }
 
         return sum;
@@ -150,24 +139,37 @@ public class Day3
         return currentDoIndex >= currentDontIndex;
     }
 
-    private static int? GetNumber(ReadOnlySpan<char> input, ref int currentIndex)
+    private static bool GetNumber(ReadOnlySpan<char> input, ref int currentIndex, out int val)
     {
+        val = 0;
         var startingIndex = currentIndex;
         while (true)
         {
-            var nextChar = GetCharFromStringAndProgress(input, currentIndex);
-            if (!nextChar.HasValue || !char.IsDigit(nextChar.Value)) break;
+            if(!GetChar(input, currentIndex, out var nextChar) || !char.IsDigit(nextChar)) break;
 
             currentIndex++;
         }
 
-        return currentIndex > startingIndex && int.TryParse(input[startingIndex..currentIndex], out var result) ? result : null;
+        if(currentIndex == input.Length) return false;
+
+        if (!int.TryParse(input[startingIndex..currentIndex], out var result))
+        {
+            return false;
+        }
+        
+        val = result;
+        return true;
     }
 
-    private static char? GetCharFromStringAndProgress(ReadOnlySpan<char> input, int position)
+    private static bool GetChar(ReadOnlySpan<char> input, int position, out char result)
     {
-        if (position < 0 || position >= input.Length) return null;
+        if (position < 0 || position >= input.Length)
+        {
+            result = default;
+            return false;
+        }
         
-        return input[position];
+        result = input[position];
+        return true;
     }
 }
