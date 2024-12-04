@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace adventOfCode2024;
@@ -33,6 +34,29 @@ public class Day3
         var sum = CalculateSumOfMultiplies2(SecondExampleInput);
 
         Assert.Equal(48, sum);
+    }
+    
+    [Fact]
+    public void SecondRegex()
+    {
+        var input = File.ReadAllText(InputFile);
+        var on = true;
+        var sum = 0;
+        foreach (Match match in Regex.Matches(input, @"do\(\)|don't\(\)|mul\(\d{1,3},\d{1,3}\)"))
+        {
+            if (match.Value is "do()") on = true;
+            else if(match.Value is "don't()") on = false;
+            else if (on)
+            {
+                var arguments = match.Value.AsSpan()[4..^1];
+                var comma = arguments.IndexOf(',');
+                
+                var x = int.Parse(arguments[..comma]);
+                var y = int.Parse(arguments[(comma + 1)..]);
+                sum += x * y;
+            }
+        }
+        Assert.Equal(67269798, sum);
     }
     
     [Fact]
