@@ -46,4 +46,6 @@ public static class SpanExtensions
 
         return startIndex - count + indexInSlice;
     }
+    
+    public static int MiddleElement(this Span<int> elements) => elements[elements.Length/2];
 }
