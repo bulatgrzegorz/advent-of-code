@@ -1,7 +1,6 @@
 using Xunit;
-using OrderingRulesAfter = System.Linq.ILookup<int,int>;
 using OrderingRulesBefore = System.Linq.ILookup<int,int>;
-using Input = (System.Linq.ILookup<int,int> orderingRulesAfter, System.Linq.ILookup<int,int> orderingRulesBefore, System.Collections.Generic.List<int[]> updates);
+using Input = (System.Linq.ILookup<int,int> orderingRulesBefore, System.Collections.Generic.List<int[]> updates);
 
 namespace adventOfCode;
 
@@ -67,8 +66,8 @@ public class Day5
     public void Second()
     {
         var input = GetInput(File.ReadLines(InputFile));
-        var comparer = new OrderingRulesComparer(input.orderingRulesAfter, input.orderingRulesBefore);
         
+        var comparer = Comparer<int>.Create((x, y) => input.orderingRulesBefore[x].Contains(y) ? 1 : -1);
         var sum = ValidateUpdates(input, (t, x) => t ? [] : x.Order(comparer).ToArray())
             .Where(x => x is {Length: > 0})
             .Sum(x => x.AsSpan().MiddleElement());
@@ -76,26 +75,16 @@ public class Day5
         Assert.Equal(4077, sum);
     }
 
-    private class OrderingRulesComparer(OrderingRulesAfter orderingRulesAfter, OrderingRulesBefore orderingRulesBefore) : IComparer<int>
-    {
-        public int Compare(int x, int y)
-        {
-            if (orderingRulesBefore[x].Contains(y)) return 1;
-            if (orderingRulesAfter[x].Contains(y)) return -1;
-            return 0;
-        }
-    }
-
     private static IEnumerable<int[]> ValidateUpdates(Input input, Func<bool, int[], int[]> updatesFunc)
     {
         foreach (var update in input.updates)
         {
-            var isUpdateCorrect = CheckUpdate(update, input.orderingRulesBefore, input.orderingRulesAfter);
+            var isUpdateCorrect = CheckUpdate(update, input.orderingRulesBefore);
             yield return updatesFunc(isUpdateCorrect, update);
         }
     }
 
-    private static bool CheckUpdate(int[] update, ILookup<int, int> orderingRulesBefore, ILookup<int, int> orderingRulesAfter)
+    private static bool CheckUpdate(int[] update, OrderingRulesBefore orderingRulesBefore)
     {
         for (var i = 0; i < update.Length; i++)
         {
@@ -104,15 +93,6 @@ public class Day5
             {
                 //we are checking if after given page there are any pages that should be placed before it
                 if (pages[(i+1)..].Contains(mustBeBefore))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var mustBeAfter in orderingRulesAfter[update[i]])
-            {
-                //we are checking if before given page there are any pages that should be placed after it
-                if (pages[..i].Contains(mustBeAfter))
                 {
                     return false;
                 }
@@ -146,9 +126,6 @@ public class Day5
             }
         }
         
-        OrderingRulesAfter orderingRulesAfter = orderingRules.ToLookup(x => x.first, x => x.second);
-        OrderingRulesBefore orderingRulesBefore = orderingRules.ToLookup(x => x.second, x => x.first);
-        
-        return (orderingRulesAfter, orderingRulesBefore, updates);
+        return (orderingRules.ToLookup(x => x.second, x => x.first), updates);
     }
 }
