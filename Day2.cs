@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
-namespace adventOfCode2024;
+namespace adventOfCode;
 
 public class Day2
 {

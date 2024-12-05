@@ -1,6 +1,6 @@
 using System.Buffers;
 
-namespace adventOfCode2024;
+namespace adventOfCode;
 
 public static class SpanExtensions
 {

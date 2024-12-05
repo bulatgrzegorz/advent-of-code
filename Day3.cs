@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Xunit;
 
-namespace adventOfCode2024;
+namespace adventOfCode;
 
 public class Day3
 {
