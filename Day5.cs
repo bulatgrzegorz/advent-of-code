@@ -1,6 +1,6 @@
 using Xunit;
-using OrderingRulesBefore = System.Linq.ILookup<int,int>;
-using Input = (System.Linq.ILookup<int,int> orderingRulesBefore, System.Collections.Generic.List<int[]> updates);
+using OrderingRules = System.Linq.ILookup<int,int>;
+using Input = (System.Linq.ILookup<int,int> orderingRules, System.Collections.Generic.List<int[]> updates);
 
 namespace adventOfCode;
 
@@ -67,7 +67,7 @@ public class Day5
     {
         var input = GetInput(File.ReadLines(InputFile));
         
-        var comparer = Comparer<int>.Create((x, y) => input.orderingRulesBefore[x].Contains(y) ? 1 : -1);
+        var comparer = Comparer<int>.Create((x, y) => input.orderingRules[x].Contains(y) ? 1 : -1);
         var sum = ValidateUpdates(input, (t, x) => t ? [] : x.Order(comparer).ToArray())
             .Where(x => x is {Length: > 0})
             .Sum(x => x.AsSpan().MiddleElement());
@@ -79,17 +79,17 @@ public class Day5
     {
         foreach (var update in input.updates)
         {
-            var isUpdateCorrect = CheckUpdate(update, input.orderingRulesBefore);
+            var isUpdateCorrect = CheckUpdate(update, input.orderingRules);
             yield return updatesFunc(isUpdateCorrect, update);
         }
     }
 
-    private static bool CheckUpdate(int[] update, OrderingRulesBefore orderingRulesBefore)
+    private static bool CheckUpdate(int[] update, OrderingRules orderingRules)
     {
         for (var i = 0; i < update.Length; i++)
         {
             var pages = update.AsSpan();
-            foreach (var mustBeBefore in orderingRulesBefore[update[i]])
+            foreach (var mustBeBefore in orderingRules[update[i]])
             {
                 //we are checking if after given page there are any pages that should be placed before it
                 if (pages[(i+1)..].Contains(mustBeBefore))
