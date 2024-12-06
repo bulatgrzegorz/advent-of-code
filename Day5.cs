@@ -86,9 +86,9 @@ public class Day5
 
     private static bool CheckUpdate(int[] update, OrderingRules orderingRules)
     {
+        var pages = update.AsSpan();
         for (var i = 0; i < update.Length; i++)
         {
-            var pages = update.AsSpan();
             foreach (var mustBeBefore in orderingRules[update[i]])
             {
                 //we are checking if after given page there are any pages that should be placed before it
