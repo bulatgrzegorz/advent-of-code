@@ -1,11 +1,10 @@
-using System.Text;
 using Xunit;
 
 namespace adventOfCode;
 
 public class Day6
 {
-    private const string InputFile = "day6.txt";
+    private const string InputFile = "Day6.txt";
     private enum Direction { Up, Down, Left, Right };
     private readonly record struct Coordinate(int Row, int Col)
     {
@@ -71,7 +70,7 @@ public class Day6
         
         var visited = GetVisited(input, out _);
         
-        Assert.Equal(5095, visited.Count());
+        Assert.Equal(5095, visited.CountBy(x => x.Coordinate).Count());
     }
     
     [Fact]
@@ -81,7 +80,7 @@ public class Day6
 
         var visited = GetVisited(input, out _);
         
-        Assert.Equal(41, visited.Count());
+        Assert.Equal(41, visited.CountBy(x => x.Coordinate).Count());
     }
     
     [Fact]
@@ -94,7 +93,8 @@ public class Day6
         var guardPath = visited.Skip(1);
 
         var count = 0;
-        foreach (var guardTrace in guardPath)
+        
+        foreach (var guardTrace in guardPath.GroupBy(x => x.Coordinate))
         {
             var tempValue = input[guardTrace.Key.Row][guardTrace.Key.Col];
             input[guardTrace.Key.Row][guardTrace.Key.Col] = 'O';
@@ -111,7 +111,7 @@ public class Day6
         Assert.Equal(1933, count);
     }
 
-    private static ILookup<Coordinate, Guard> GetVisited(char[][] input, out Guard guard)
+    private static HashSet<Guard> GetVisited(char[][] input, out Guard guard)
     {
         var rows = input.Length;
         var cols = input[0].Length;
@@ -123,7 +123,7 @@ public class Day6
         return GetVisited(input, guard, out _, result);
     }
     
-    private static ILookup<Coordinate, Guard> GetVisited(char[][] input, Guard guard, out bool isStuck, HashSet<Guard>? path = null)
+    private static HashSet<Guard> GetVisited(char[][] input, Guard guard, out bool isStuck, HashSet<Guard>? path = null)
     {
         path ??= [];
         isStuck = false;
@@ -141,14 +141,13 @@ public class Day6
             if(guard.IsOut(rows, cols)) break;
             
             //if we already had this coordinate on same direction that mean that we are going to be stuck in loop
-            if(!path.Add(guard))
-            {
-                isStuck = true;
-                break;
-            }
+            if (path.Add(guard)) continue;
+            
+            isStuck = true;
+            break;
         }
 
-        return path.ToLookup(x => x.Coordinate, x => x);;
+        return path;
     }
 
     private static Guard FindGuard(int rows, int cols, char[][] input)
