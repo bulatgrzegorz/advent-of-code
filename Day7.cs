@@ -33,7 +33,7 @@ public class Day7
         Operation[] operations = [Operation.Sum, Operation.Mul];
         foreach (var (testValue, numbers) in input)
         {
-            if (CanBeProduced(numbers, testValue, operations))
+            if (CanBeProduced(testValue, numbers[0], numbers[1..], operations))
             {
                 result += testValue;
             }
@@ -50,7 +50,7 @@ public class Day7
         Operation[] operations = [Operation.Sum, Operation.Mul, Operation.Join];
         foreach (var (testValue, numbers) in input)
         {
-            if (CanBeProduced(numbers, testValue, operations))
+            if (CanBeProduced(testValue, numbers[0], numbers[1..], operations))
             {
                 result += testValue;
             }
@@ -67,7 +67,7 @@ public class Day7
         Operation[] operations = [Operation.Sum, Operation.Mul];
         foreach (var (testValue, numbers) in input)
         {
-            if (CanBeProduced(numbers, testValue, operations))
+            if (CanBeProduced(testValue, numbers[0], numbers[1..], operations))
             {
                 result += testValue;
             }
@@ -84,7 +84,7 @@ public class Day7
         Operation[] operations = [Operation.Sum, Operation.Mul, Operation.Join];
         foreach (var (testValue, numbers) in input)
         {
-            if (CanBeProduced(numbers, testValue, operations))
+            if (CanBeProduced(testValue, numbers[0], numbers[1..], operations))
             {
                 result += testValue;
             }
@@ -93,11 +93,16 @@ public class Day7
         Assert.Equal((UInt128)337041851384440, result);
     }
 
-    private static bool CanBeProduced(UInt128[] numbers, UInt128 testValue, Operation[] operations)
+    private bool CanBeProduced(UInt128 target, UInt128 acc, ReadOnlySpan<UInt128> nums, Operation[] operations)
     {
-        foreach (var permutation in GenerateAllPermutations(operations, numbers.Length - 1))
+        if(acc > target) return false;
+        if (nums is []) return acc == target;
+
+        if (nums is not [var head, .. var tail]) return false;
+        
+        foreach (var operation in operations)
         {
-            if (CanBeProducedFromPermutation(numbers, testValue, permutation))
+            if (CanBeProduced(target, ApplyOperation(acc, head, operation), tail, operations))
             {
                 return true;
             }
@@ -106,64 +111,14 @@ public class Day7
         return false;
     }
 
-    private static bool CanBeProducedFromPermutation(UInt128[] numbers, UInt128 testValue, Operation[] permutation)
+    private UInt128 ApplyOperation(UInt128 accumulator, UInt128 value, Operation operation) => operation switch
     {
-        var accumulator = numbers[0];
-        for (var i = 1; i < numbers.Length; i++)
-        {
-            try
-            {
-                accumulator = permutation[i - 1] switch
-                {
-                    Operation.Sum => accumulator + numbers[i],
-                    Operation.Mul => accumulator * numbers[i],
-                    Operation.Join => UInt128.Parse($"{accumulator}{numbers[i]}"),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-            
-                if(accumulator > testValue)
-                {
-                    return false;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-
-        }
-        
-        return accumulator == testValue;
-    }
-
-    static IEnumerable<T[]> GenerateAllPermutations<T>(T[] numbers, int length)
-    {
-        var currentPermutation = new T[length];
-        
-        // Recursive backtracking to generate all permutations
-        return Backtrack(numbers, currentPermutation, 0);
-    }
-
-    private static IEnumerable<T[]> Backtrack<T>(T[] numbers, T[] currentPermutation, int position)
-    {
-        if (position == currentPermutation.Length)
-        {
-            // When the current permutation is complete, add it to the result list
-            yield return [..currentPermutation];
-            yield break;
-        }
-
-        foreach (var number in numbers)
-        {
-            // Assign the number at index `i` to the current position
-            currentPermutation[position] = number;
-            foreach (var result in Backtrack(numbers, currentPermutation, position + 1))
-            {
-                yield return result;
-            }
-        }
-    }
-
+        Operation.Sum => accumulator + value,
+        Operation.Mul => accumulator * value,
+        Operation.Join => UInt128.Parse($"{accumulator}{value}"),
+        _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
+    };
+    
     private static IEnumerable<(UInt128 testValue, UInt128[] numbers)> ParseInput(string[] inputLines)
     {
         foreach (var line in inputLines)
