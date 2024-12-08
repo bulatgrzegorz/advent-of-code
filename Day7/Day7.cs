@@ -16,7 +16,7 @@ public class Day7
                                         292: 11 6 16 20
                                         """;
 
-    private const string InputFile = "Day7.txt";
+    private const string InputFile = "Day7.input";
 
     private enum Operation
     {
@@ -29,7 +29,7 @@ public class Day7
     private void Example()
     {
         var input = ParseInput(ExampleInput.Split(Environment.NewLine));
-        UInt128 result = 0;
+        long result = 0;
         Operation[] operations = [Operation.Sum, Operation.Mul];
         foreach (var (testValue, numbers) in input)
         {
@@ -39,14 +39,14 @@ public class Day7
             }
         }
         
-        Assert.Equal((ulong)3749, result);
+        Assert.Equal(3749, result);
     }
     
     [Fact]
     private void ExampleSecond()
     {
         var input = ParseInput(ExampleInput.Split(Environment.NewLine));
-        UInt128 result = 0;
+        long result = 0;
         Operation[] operations = [Operation.Sum, Operation.Mul, Operation.Join];
         foreach (var (testValue, numbers) in input)
         {
@@ -56,14 +56,14 @@ public class Day7
             }
         }
         
-        Assert.Equal((UInt128)11387, result);
+        Assert.Equal(11387, result);
     }
     
     [Fact]
     private void First()
     {
         var input = ParseInput(File.ReadAllLines(InputFile));
-        UInt128 result = 0;
+        long result = 0;
         Operation[] operations = [Operation.Sum, Operation.Mul];
         foreach (var (testValue, numbers) in input)
         {
@@ -73,14 +73,14 @@ public class Day7
             }
         }
         
-        Assert.Equal((UInt128)303766880536, result);
+        Assert.Equal(303766880536, result);
     }
     
     [Fact]
     private void Second()
     {
         var input = ParseInput(File.ReadAllLines(InputFile));
-        UInt128 result = 0;
+        long result = 0;
         Operation[] operations = [Operation.Sum, Operation.Mul, Operation.Join];
         foreach (var (testValue, numbers) in input)
         {
@@ -90,10 +90,10 @@ public class Day7
             }
         }
         
-        Assert.Equal((UInt128)337041851384440, result);
+        Assert.Equal(337041851384440, result);
     }
 
-    private bool CanBeProduced(UInt128 target, UInt128 acc, ReadOnlySpan<UInt128> nums, Operation[] operations)
+    private bool CanBeProduced(long target, long acc, ReadOnlySpan<long> nums, Operation[] operations)
     {
         if(acc > target) return false;
         if (nums is []) return acc == target;
@@ -111,24 +111,24 @@ public class Day7
         return false;
     }
 
-    private UInt128 ApplyOperation(UInt128 accumulator, UInt128 value, Operation operation) => operation switch
+    private long ApplyOperation(long accumulator, long value, Operation operation) => operation switch
     {
         Operation.Sum => accumulator + value,
         Operation.Mul => accumulator * value,
-        Operation.Join => UInt128.Parse($"{accumulator}{value}"),
+        Operation.Join => long.Parse($"{accumulator}{value}"),
         _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
     };
     
-    private static IEnumerable<(UInt128 testValue, UInt128[] numbers)> ParseInput(string[] inputLines)
+    private static IEnumerable<(long testValue, long[] numbers)> ParseInput(string[] inputLines)
     {
         foreach (var line in inputLines)
         {
             var parts = line.Split(':');
-            var testValue = UInt128.Parse(parts[0]);
+            var testValue = long.Parse(parts[0]);
             var numbers = parts[1]
                 .Split(' ')
-                .Where(x => UInt128.TryParse(x, out _))
-                .Select(UInt128.Parse)
+                .Where(x => long.TryParse(x, out _))
+                .Select(long.Parse)
                 .ToArray();
             
             yield return (testValue, numbers);

@@ -5,7 +5,7 @@ namespace adventOfCode;
 
 public class Day4
 {
-    private const string InputFile = "Day4.txt";
+    private const string InputFile = "Day4.input";
 
     [Fact]
     public void First()

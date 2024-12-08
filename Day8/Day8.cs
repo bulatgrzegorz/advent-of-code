@@ -19,7 +19,7 @@ public class Day8
                                         ............
                                         ............
                                         """;
-    private const string InputFile = "Day8.txt";
+    private const string InputFile = "Day8.input";
     
     [Fact]
     public void Example()

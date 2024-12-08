@@ -4,7 +4,7 @@ namespace adventOfCode;
 
 public class Day6
 {
-    private const string InputFile = "Day6.txt";
+    private const string InputFile = "Day6.input";
     private enum Direction { Up, Down, Left, Right };
     private readonly record struct Coordinate(int Row, int Col)
     {
