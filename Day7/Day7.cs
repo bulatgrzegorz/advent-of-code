@@ -16,7 +16,7 @@ public class Day7
                                         292: 11 6 16 20
                                         """;
 
-    private const string InputFile = "Day7.input";
+    private const string InputFile = "Day7/Day7.input";
 
     private enum Operation
     {

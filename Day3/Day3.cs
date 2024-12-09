@@ -10,7 +10,7 @@ public class Day3
     private const string MultiplyMarker = "mul(";
     private const string DoMarker = "do()";
     private const string DontMarker = "don't()";
-    private const string InputFile = "Day3.input";
+    private const string InputFile = "Day3/Day3.input";
 
     [Fact]
     public void Example()

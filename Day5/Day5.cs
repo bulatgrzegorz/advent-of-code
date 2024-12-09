@@ -36,7 +36,7 @@ public class Day5
                                         61,13,29
                                         97,13,75,29,47
                                         """;
-    private const string InputFile = "Day5.input";
+    private const string InputFile = "Day5/Day5.input";
     
     [Fact]
     public void Example()

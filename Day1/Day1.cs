@@ -5,7 +5,7 @@ namespace adventOfCode;
 
 public class Day1
 {
-    private const string InputFile = "Day1.input";
+    private const string InputFile = "Day1/Day1.input";
     private const string ExampleInput = """
                                         3   4
                                         4   3
