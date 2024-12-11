@@ -45,7 +45,7 @@ public class Day11
     public void Second()
     {
         var stones = File.ReadAllText(InputFile).Split(' ').Select(long.Parse).ToList();
-
+        
         Assert.Distinct(stones);
         
         var result = CountStones(stones, 75);
@@ -64,40 +64,25 @@ public class Day11
         }
 
         long result = 0;
-        var ob = new object();
         var sumCache = new ConcurrentDictionary<(long treeValue, int generation), long>();
         Parallel.ForEach(trees, () => 0L, (tree, _, localSum) =>
             {
                 localSum += Sum(tree, 0, stoneTreeHeads, sumCache, generations);
                 return localSum;
             },
-            localSum =>
-            {
-                lock (ob)
-                {
-                    result += localSum;
-                }
-            });
+            localSum => Interlocked.Add(ref result, localSum));
         
-        // var result = trees.AsParallel().Aggregate(long.Zero, (acc, tree) => acc + Sum(tree, 0, stoneTreeHeads, generations));
         return result;
     }
 
     private static long Sum(Tree? tree, int generation, ConcurrentDictionary<long, Tree> stoneTreeHeads, ConcurrentDictionary<(long treeValue, int generation), long> sumCache, int generations)
     {
         if (tree is null) return 0L;
-
-        if (generation == generations)
-        {
-            return 1;
-        }
-
+        if (generation == generations) return 1;
+        
         if (sumCache.TryGetValue((tree.Value, generation), out var sum)) return sum;
 
-        if (tree.IsOmitted || tree.IsOver)
-        {
-            tree = stoneTreeHeads[tree.Value];
-        }
+        tree = tree.IsOmitted || tree.IsOver ? stoneTreeHeads[tree.Value] : tree;
 
         var result =
             Sum(tree.Left, generation + 1, stoneTreeHeads, sumCache, generations) +
