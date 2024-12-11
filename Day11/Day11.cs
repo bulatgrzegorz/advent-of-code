@@ -45,12 +45,33 @@ public class Day11
     public void Second()
     {
         var stones = File.ReadAllText(InputFile).Split(' ').Select(long.Parse).ToList();
-        
-        Assert.Distinct(stones);
-        
-        var result = CountStones(stones, 75);
 
+        var result = stones.Sum(x => Generation(x, 75, []));
+        
+        // var result = CountStones(stones, 75);
+        
         Assert.Equal(276661131175807, result);
+    }
+
+    private long Generation(long stone, int generation, ConcurrentDictionary<(long stone, int generation), long> cache)
+    {
+        return cache.GetOrAdd((stone, generation), _ =>
+        {
+            return (stone, generation) switch
+            {
+                (_, 0) => 1,
+                (0, _) => Generation(1, generation - 1, cache),
+                var (s, _) when s.ToString().Length % 2 == 0 => SeparateNumber(s.ToString()).Sum(x => Generation(x, generation - 1, cache)),
+                _ => Generation(stone * 2024, generation - 1, cache)
+            };
+        });
+    }
+
+    private long[] SeparateNumber(string number)
+    {
+        var firstStone = long.Parse(number[..(number.Length/2)]);
+        var secondStone = long.Parse(number[(number.Length/2)..]);
+        return [firstStone, secondStone];
     }
 
     private long CountStones(List<long> stones, int generations)
