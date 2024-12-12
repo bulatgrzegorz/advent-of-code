@@ -5,24 +5,12 @@ namespace adventOfCode.Day12;
 public class Day12
 {
     private const string InputFile = "Day12/Day12.input";
-    private const string InputExample = """
-                                        RRRRIICCFF
-                                        RRRRIICCCF
-                                        VVRRRCCFFF
-                                        VVRCCCJFFF
-                                        VVVVCJJCFE
-                                        VVIVCCJJEE
-                                        VVIIICJJEE
-                                        MIIIIIJJEE
-                                        MIIISIJEEE
-                                        MMMISSJEEE
-                                        """;
-    
+
     private enum Direction { Up, Down, Left, Right };
 
-    private static Direction[] _allDirections = [Direction.Up, Direction.Down, Direction.Left, Direction.Right];
-    private static Direction[] _upDownDirections = [Direction.Up, Direction.Down];
-    private static Direction[] _leftRightDirections = [Direction.Left, Direction.Right];
+    private static readonly Direction[] AllDirections = [Direction.Up, Direction.Down, Direction.Left, Direction.Right];
+    private static readonly Direction[] UpDownDirections = [Direction.Up, Direction.Down];
+    private static readonly Direction[] LeftRightDirections = [Direction.Left, Direction.Right];
     private readonly record struct Coordinate(int Row, int Col)
     {
         public Coordinate Move(Direction direction) => direction switch
@@ -64,7 +52,7 @@ public class Day12
             var result = 0;
             foreach (var coordinate in field)
             {
-                foreach (var direction in _allDirections)
+                foreach (var direction in AllDirections)
                 {
                     if(HasNeighbors(type, coordinate, direction)) result++;
                 }
@@ -125,7 +113,7 @@ public class Day12
             var rows = coordinates.GroupBy(x => x.Row).OrderBy(x => x.Key);
             foreach (var row in rows)
             {
-                foreach (var direction in _upDownDirections)
+                foreach (var direction in UpDownDirections)
                 {
                     var colsWithNeighbors = row.Where(x => map.HasNeighbors(type, x, direction))
                         .Select(x => x.Col)
@@ -139,7 +127,7 @@ public class Day12
             var cols = coordinates.GroupBy(x => x.Col).OrderBy(x => x.Key);
             foreach (var col in cols)
             {
-                foreach (var direction in _leftRightDirections)
+                foreach (var direction in LeftRightDirections)
                 {
                     var rowsWithNeighbors = col.Where(x => map.HasNeighbors(type, x, direction))
                         .Select(x => x.Row)
@@ -168,7 +156,7 @@ public class Day12
         visited ??= [];
         visited.Add(position.Coordinate);
 
-        foreach (var direction in _allDirections)
+        foreach (var direction in AllDirections)
         {
             if(!map.Move(position, direction, visited, out var newPosition)) continue;
             Traverse(map, newPosition, visited);
