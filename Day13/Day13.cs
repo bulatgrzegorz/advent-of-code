@@ -46,7 +46,7 @@ public class Day13
         Assert.Equal(83029436920891, result);
     }
 
-    private record struct Tuple(decimal X, decimal Y);
+    private readonly record struct Tuple(decimal X, decimal Y);
     
     private static IEnumerable<(Tuple A, Tuple B, Tuple Price)> ParseInput(string[] input, decimal add = 0)
     {
@@ -57,15 +57,15 @@ public class Day13
         {
             var buttonA = Parse(line[0], @"Button A: X\+(\d+), Y\+(\d+)");
             var buttonB = Parse(line[1], @"Button B: X\+(\d+), Y\+(\d+)");
-            var price = Parse(line[2], @"Prize: X=(\d+), Y=(\d+)");
+            var price = Parse(line[2], @"Prize: X=(\d+), Y=(\d+)", add);
 
-            yield return (buttonA, buttonB, new Tuple(X: price.X + add, Y: price.Y + add));
+            yield return (buttonA, buttonB, price);
         }
     }
 
-    private static Tuple Parse(string input, [StringSyntax("Regex")] string pattern)
+    private static Tuple Parse(string input, [StringSyntax("Regex")] string pattern, decimal add = 0)
     {
         var match = Regex.Match(input, pattern);
-        return new Tuple(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+        return new Tuple(int.Parse(match.Groups[1].Value) + add, int.Parse(match.Groups[2].Value) + add);
     }
 }
