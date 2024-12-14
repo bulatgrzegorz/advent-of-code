@@ -14,9 +14,8 @@ public class Day13
         var input = ParseInput(File.ReadAllLines(InputFile));
 
         decimal result = 0;
-        foreach (var (buttonA, buttonB, price) in input)
+        foreach (var ((x1, y1), (x2, y2), (xp, yp)) in input)
         {
-            var ((x1, y1), (x2, y2), (xp, yp)) = (buttonA, buttonB, price);
             var a = (x2 * yp - y2 * xp) / (y1 * x2 - x1 * y2);
             var b = (xp - a * x1) / x2;
             
@@ -33,9 +32,8 @@ public class Day13
         var input = ParseInput(File.ReadAllLines(InputFile), 10000000000000);
 
         decimal result = 0;
-        foreach (var (buttonA, buttonB, price) in input)
+        foreach (var ((x1, y1), (x2, y2), (xp, yp)) in input)
         {
-            var ((x1, y1), (x2, y2), (xp, yp)) = (buttonA, buttonB, price);
             var a = (x2 * yp - y2 * xp) / (y1 * x2 - x1 * y2);
             var b = (xp - a * x1) / x2;
             
