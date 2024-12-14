@@ -72,16 +72,12 @@ public class Day14
     [Fact]
     public void Second()
     {
-        //comment below lines to start searching process - results are printed into console
-        Assert.True(true);
-        return;
-        
         var wide = 101;
         var tall = 103;
         
         var robots = ParseRobots(File.ReadAllText(InputFile)).ToArray();
         var generation = 1;
-        const int continuousGroupThreshold = 6;
+        const int varianceThreshold = 1000;
         while (true)
         {
             for (var i = 0; i < robots.Length; i++)
@@ -94,40 +90,28 @@ public class Day14
                 newX = newX < 0 ? wide + newX : newX;
                 robots[i] = robot with { X = newX, Y = newY };
             }
-            
-            if (GetLongestHorizontalContinuousGroup(tall, robots) > continuousGroupThreshold)
+
+            if (CalculateTotalVariance(robots) < varianceThreshold)
             {
-                Console.WriteLine($"Generation: {generation}");
-                PrintRobotsMap(wide, tall, robots);
+                Assert.Equal(6888, generation);
+                // Console.WriteLine($"Generation: {generation}");
+                // PrintRobotsMap(wide, tall, robots);
+                return;
             }
 
             generation++;
         }
     }
-
-    private static int GetLongestHorizontalContinuousGroup(int tall, Robot[] robots)
+    
+    private static double CalculateTotalVariance(Robot[] points)
     {
-        var longestSoFar = 0;
-        for (var t = 0; t < tall; t++)
-        {
-            var longest = 0; 
-            var robotsRow = robots.Where(x => x.Y == t).Select(x => x.X).Distinct().Order().ToList();
-            for (var i = 1; i < robotsRow.Count; i++)
-            {
-                if (robotsRow[i] == robotsRow[i - 1] + 1) longest++;
-                else
-                {
-                    longestSoFar = Math.Max(longest, longestSoFar);
-                    longest = 0;
-                }
-            }
-                
-            longestSoFar = Math.Max(longest, longestSoFar);
-        }
-
-        return longestSoFar;
+        var meanX = points.Average(p => p.X);
+        var meanY = points.Average(p => p.Y);
+        
+        var sumOfSquaredDistances = points.Sum(p => Math.Pow(p.X - meanX, 2) + Math.Pow(p.Y - meanY, 2));
+        return sumOfSquaredDistances / points.Length;
     }
-
+    
     private int CountGroups(int wide, int tall, Robot[] robots)
     {
         var leftTop = 0;
