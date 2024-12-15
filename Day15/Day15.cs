@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using Xunit;
 
 namespace adventOfCode.Day15;
@@ -7,43 +6,7 @@ public class Day15
 {
     private const string InputFile = "Day15/Day15.input";
 
-    // private const string InputExample = """
-    //                                     #######
-    //                                     #...#.#
-    //                                     #.....#
-    //                                     #..OO@#
-    //                                     #..O..#
-    //                                     #.....#
-    //                                     #######
-    //                                     
-    //                                     <vv<<^^<<^^
-    //                                     """;
-    private const string InputExample = """
-                                        ##########
-                                        #..O..O.O#
-                                        #......O.#
-                                        #.OO..O.O#
-                                        #..O@..O.#
-                                        #O#..O...#
-                                        #O..O..O.#
-                                        #.OO.O.OO#
-                                        #....O...#
-                                        ##########
-                                        
-                                        <vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
-                                        vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
-                                        ><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
-                                        <<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
-                                        ^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
-                                        ^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
-                                        >^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
-                                        <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
-                                        ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
-                                        v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
-                                        """;
-    
     private enum Direction { Up, Down, Left, Right }
-
     private readonly record struct Coordinate(int Row, int Col)
     {
         public Coordinate Move(Direction direction) => direction switch
@@ -55,7 +18,6 @@ public class Day15
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
     }
-
     private class Box(Coordinate leftSide, Coordinate rightSide)
     {
         public Coordinate LeftSide { get; set; } = leftSide;
@@ -73,8 +35,8 @@ public class Day15
         {
             return direction switch
             {
-                Direction.Left => [..boxes.Where(x => x.RightSide.Row == LeftSide.Row && x.RightSide.Col == LeftSide.Col - 1)],
-                Direction.Right => [..boxes.Where(x => x.LeftSide.Row == RightSide.Row && x.LeftSide.Col == RightSide.Col + 1)],
+                Direction.Left => [..boxes.Where(x => x.OnSameRow(this) && x.RightSide.Col == LeftSide.Col - 1)],
+                Direction.Right => [..boxes.Where(x => x.OnSameRow(this) && x.LeftSide.Col == RightSide.Col + 1)],
                 Direction.Up or Direction.Down =>
                 [
                     ..boxes.Where(x => x.IsIn(LeftSide.Move(direction))),
@@ -83,6 +45,8 @@ public class Day15
                 _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
             };
         }
+
+        private bool OnSameRow(Box other) => LeftSide.Row == other.LeftSide.Row;
 
         public void Move(Direction direction)
         {
@@ -170,18 +134,16 @@ public class Day15
         {
             var movedCoordinate = initialRobot.Move(direction);
             var movedChar = Matrix[movedCoordinate.Row][movedCoordinate.Col];
-            if (movedChar is '#')
+            switch (movedChar)
             {
-                moved = default;
-                return false;
-            }
-
-            if (movedChar is '.')
-            {
-                Matrix[movedCoordinate.Row][movedCoordinate.Col] = '@';
-                Matrix[initialRobot.Row][initialRobot.Col] = '.';
-                moved = movedCoordinate;
-                return true;
+                case '#':
+                    moved = default;
+                    return false;
+                case '.':
+                    Set('@', movedCoordinate);
+                    Set('.', initialRobot);
+                    moved = movedCoordinate;
+                    return true;
             }
 
             var firstBox = movedCoordinate;
@@ -189,22 +151,22 @@ public class Day15
             {
                 movedCoordinate = movedCoordinate.Move(direction);
                 movedChar = Matrix[movedCoordinate.Row][movedCoordinate.Col];
-                if (movedChar is '#')
+                switch (movedChar)
                 {
-                    moved = default;
-                    return false;
-                }
-                
-                if (movedChar is '.')
-                {
-                    Matrix[movedCoordinate.Row][movedCoordinate.Col] = 'O';
-                    Matrix[firstBox.Row][firstBox.Col] = '@';
-                    Matrix[initialRobot.Row][initialRobot.Col] = '.';
-                    moved = firstBox;
-                    return true;
+                    case '#':
+                        moved = default;
+                        return false;
+                    case '.':
+                        Set('O', movedCoordinate);
+                        Set('@', firstBox);
+                        Set('.', initialRobot);
+                        moved = firstBox;
+                        return true;
                 }
             }
         }
+        
+        private void Set(char value, Coordinate coordinate) => Matrix[coordinate.Row][coordinate.Col] = value;
         
         public Coordinate FindRobot()
         {
@@ -219,21 +181,6 @@ public class Day15
             throw new Exception("Could not find robot in given map");
         }
 
-        public void Print()
-        {
-            Console.WriteLine("===============");
-            
-            for (var r = 0; r < _rows; r++)
-            {
-                for (var c = 0; c < _cols; c++)
-                {
-                    Console.Write(Matrix[r][c]);
-                }
-                
-                Console.WriteLine();
-            }
-        }
-        
         public int CountBoxes()
         {
             var result = 0;
@@ -251,121 +198,53 @@ public class Day15
     }
 
     [Fact]
-    public void Test()
-    {
-        var (map, directions) = ParseInput(InputExample.Split(Environment.NewLine));
-        var robot = map.FindRobot();
-        map.Print();
-        
-        foreach (var direction in directions)
-        {
-            if (map.Move(robot, direction, out var moved))
-            {
-                robot = moved;
-            }
-            map.Print();
-        }
-        
-        Assert.Equal(2028, map.CountBoxes());
-    }
-
-    [Fact]
     public void First()
     {
         var (map, directions) = ParseInput(File.ReadAllLines(InputFile));
         var robot = map.FindRobot();
-        // map.Print();
-        
+
         foreach (var direction in directions)
         {
             if (map.Move(robot, direction, out var moved))
             {
                 robot = moved;
             }
-            // map.Print();
         }
         
-        Assert.Equal(2028, map.CountBoxes());
+        Assert.Equal(1441031, map.CountBoxes());
     }
     
     [Fact]
     public void Second()
     {
-        // var (map, robot, directions) = ParseInput2(InputExample.Split(Environment.NewLine));
-        var (map, robot, directions) = ParseInput2(File.ReadAllLines(InputFile));
-        // map.Print();
-        
-        var a = map.Walls.MaxBy(x => x.Col + x.Row);
-        var matrix = new char[a.Row + 1][];
-        for (int r = 0; r < matrix.Length; r++)
-        {
-            matrix[r] = new char[a.Col + 1];
-            Array.Fill(matrix[r], '.');
-        }
-        
-        // Print(matrix, map, robot);
-        
+        var (map, robot, directions) = ParseInput2(File.ReadAllText(InputFile));
+
         foreach (var direction in directions)
         {
             if (map.Move(robot, direction, out var moved))
             {
                 robot = moved;
-                // Print(matrix, map, robot);
             }
-            // map.Print();
         }
         
-        Assert.Equal(9021, map.Boxes.Sum(x => x.LeftSide.Row * 100 + x.LeftSide.Col));
+        Assert.Equal(1425169, map.Boxes.Sum(x => x.LeftSide.Row * 100 + x.LeftSide.Col));
     }
 
-    private void Print(char[][] matrix, Map2 map, Coordinate robot)
+    private (Map2 map, Coordinate robot, Direction[] directions) ParseInput2(string input)
     {
-        Console.WriteLine("============================");
-        for (int r = 0; r < matrix.Length; r++)
-        {
-            for (int c = 0; c < matrix[0].Length; c++)
-            {
-                if (map.Walls.Contains(new Coordinate(r, c)))
-                {
-                    Console.Write('#');
-                }
-                else if (map.Boxes.Any(x => x.LeftSide == new Coordinate(r, c)))
-                {
-                    Console.Write('[');
-                }
-                else if (map.Boxes.Any(x => x.RightSide == new Coordinate(r, c)))
-                {
-                    Console.Write(']');
-                }
-                else if (robot == new Coordinate(r, c))
-                {
-                    Console.Write('@');
-                }
-                else
-                {
-                    Console.Write('.');
-                }
-            }
-            
-            Console.WriteLine();
-        }
-
-        Console.WriteLine();
-    }
-
-    private (Map2 map, Coordinate robot, Direction[] directions) ParseInput2(ReadOnlySpan<string> input)
-    {
-        var separator = input.IndexOf(string.Empty);
-        var map = GetMap(input[..separator].ToArray());
+        input = Double(input);
+        var lines = input.Split(Environment.NewLine).AsSpan();
+        var separator = lines.IndexOf(string.Empty);
         var boxes = new HashSet<Box>();
         var walls = new HashSet<Coordinate>();
-        var doubled = Double(map.Matrix);
+        
+        var matrix = lines[..separator].ToArray().Select(x => x.ToArray()).ToArray();
         Coordinate robot = default;
-        for (int r = 0; r < doubled.Length; r++)
+        for (var r = 0; r < matrix.Length; r++)
         {
-            for (int c = 0; c < doubled[0].Length; c++)
+            for (var c = 0; c < matrix[0].Length; c++)
             {
-                switch (doubled[r][c])
+                switch (matrix[r][c])
                 {
                     case '#':
                         walls.Add(new Coordinate(r, c));
@@ -379,43 +258,10 @@ public class Day15
                 }
             }
         }
-        return (new Map2(boxes, walls), robot, GetDirections(input[separator..].ToArray()));
+        return (new Map2(boxes, walls), robot, GetDirections(lines[separator..].ToArray()));
     }
 
-    private char[][] Double(char[][] matrix)
-    {
-        var rows = new List<List<char>>();
-        foreach (var matrixRow in matrix)
-        {
-            var row = new List<char>();
-            for (var c = 0; c < matrix[0].Length; c++)
-            {
-                switch (matrixRow[c])
-                {
-                    case '#':
-                        row.Add('#');
-                        row.Add('#');
-                        break;
-                    case '@':
-                        row.Add('@');
-                        row.Add('.');
-                        break;
-                    case '.':
-                        row.Add('.');
-                        row.Add('.');
-                        break;
-                    default:
-                        row.Add('[');
-                        row.Add(']');
-                        break;
-                }
-            }
-            
-            rows.Add(row);
-        }
-        
-        return rows.Select(x => x.ToArray()).ToArray();
-    }
+    private static string Double(string input) => input.Replace("#", "##").Replace(".", "..").Replace("O", "[]").Replace("@", "@.");
 
     private static (Map map, Direction[] directions) ParseInput(ReadOnlySpan<string> input)
     {
