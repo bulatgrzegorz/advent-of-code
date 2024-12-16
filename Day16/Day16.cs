@@ -8,21 +8,23 @@ public class Day16
 {
     private const string InputFile = "Day16/Day16.input";
     private const string ExampleInput = """
-                                        ###############
-                                        #.......#....E#
-                                        #.#.###.#.###.#
-                                        #.....#.#...#.#
-                                        #.###.#####.#.#
-                                        #.#.#.......#.#
-                                        #.#.#####.###.#
-                                        #...........#.#
-                                        ###.#.#####.#.#
-                                        #...#.....#.#.#
-                                        #.#.#.###.#.#.#
-                                        #.....#...#.#.#
-                                        #.###.#.#.#.#.#
-                                        #S..#.....#...#
-                                        ###############
+                                        #################
+                                        #...#...#...#..E#
+                                        #.#.#.#.#.#.#.#.#
+                                        #.#.#.#...#...#.#
+                                        #.#.#.#.###.#.#.#
+                                        #...#.#.#.....#.#
+                                        #.#.#.#.#.#####.#
+                                        #.#...#.#.#.....#
+                                        #.#.#####.#.###.#
+                                        #.#.#.......#...#
+                                        #.#.###.#####.###
+                                        #.#.#...#.....#.#
+                                        #.#.#.#####.###.#
+                                        #.#.#.........#.#
+                                        #.#.#.#########.#
+                                        #S#.............#
+                                        #################
                                         """;
     
     public enum Direction { Up, Left, Down, Right }
@@ -64,50 +66,78 @@ public class Day16
         }
         
         Coordinate start = matrix.First(x => x.Value == 'S').Key;
-        Coordinate end = matrix.First(x => x.Value == 'E').Key;;
+        Coordinate end = matrix.First(x => x.Value == 'E').Key;
 
+        var result = Dijkstra(matrix, start, Direction.Right, end);
+
+        Assert.Equal(105508, result);
+    }
+    
+    [Fact]
+    public void Second()
+    {
+        Dictionary<Coordinate, char> matrix = [];
+        
+        var input = File.ReadAllLines(InputFile).Select(x => x.ToCharArray()).ToArray();
+        // var input = ExampleInput.Split(Environment.NewLine).Select(x => x.ToCharArray()).ToArray();
+        for (var r = 0; r < input.Length; r++)
+        {
+            for (var c = 0; c < input[0].Length; c++)
+            {
+                matrix.Add(new Coordinate(r, c), input[r][c]);
+            }
+        }
+        
+        Coordinate start = matrix.First(x => x.Value == 'S').Key;
+        Coordinate end = matrix.First(x => x.Value == 'E').Key;
+
+        var shortestPath = Dijkstra(matrix, start, Direction.Right, end);
+        
+        var results = new List<HashSet<Coordinate>>();
+        Traverse(matrix, start, Direction.Right, end, shortestPath, 0, [], results);
+        
+        Assert.Equal(548, results.SelectMany(x => x).Distinct().Count());
+    }
+
+    private static void Traverse(Dictionary<Coordinate, char> matrix, Coordinate pos, Direction or, Coordinate end,
+        Distance pathDistance, Distance totalDistance, HashSet<Coordinate> path, List<HashSet<Coordinate>> results)
+    {
+        if (!path.Add(pos)) return;
+        if (totalDistance > pathDistance) return;
+
+        if(pos == end && totalDistance == pathDistance)
+        {
+            results.Add(path);
+            return;
+        }
+        
+        if(Dijkstra(matrix, pos, or, end) + totalDistance != pathDistance) return;
+
+        foreach (var (moved, distance, orientation) in GetNeighbours(matrix, pos, or))
+        {
+            Traverse(matrix, moved, orientation, end, pathDistance, totalDistance + distance, [..path], results);
+        }
+    }
+
+    private static int Dijkstra(Dictionary<Coordinate, char> matrix, Coordinate start, Direction startOrientation, Coordinate end)
+    {
         var queue = new PriorityQueue<(Coordinate coordinate, Direction direction), Distance>();
 
         var distances = new Dictionary<(Coordinate coordinate, Direction orientation), (Coordinate? previous, Direction previousOrientation, Distance distance)>
-            {
-                [(start, Direction.Right)] = (null, default, 0)
-            };
-
-        queue.Enqueue((start, Direction.Right), 0);
-
-        IEnumerable<(Coordinate Coordinate, Distance distance, Direction orientation)> GetNeighbours(Coordinate coordinate, Direction orientation)
         {
-            var oppositeOrientation = _oppositeOrientation[orientation];
-            foreach (var direction in AllDirections)
-            {
-                if(direction == oppositeOrientation) continue;
-                
-                var movedCoordinate = coordinate.Move(direction);
-                if(matrix[movedCoordinate] is '#') continue;
-                
-                var rotation = Math.Abs(direction - orientation) % 2;
-                yield return (movedCoordinate, rotation * 1000 + 1, direction);
-            }
-        }
+            [(start, startOrientation)] = (null, default, 0)
+        };
 
-        var result = 0;
+        queue.Enqueue((start, startOrientation), 0);
         
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
             
-            //build route
-            if (current.coordinate == end)
-            {
-                // var endd = distances.First(x => x.Key.coordinate == end);
-                result = distances[(current.coordinate, current.direction)].distance;
-                // result = endd.Value.distance;
-                var route = BuildRoute(distances, current.coordinate, current.direction);
-                break;
-            }
+            if (current.coordinate == end) return distances[(current.coordinate, current.direction)].distance;
             
-            var (previous, previousOrientation, currentNodeDistance) = CollectionsMarshal.GetValueRefOrAddDefault(distances, (current.coordinate, current.direction), out _);
-            foreach (var edge in GetNeighbours(current.coordinate, current.direction))
+            var (_, _, currentNodeDistance) = CollectionsMarshal.GetValueRefOrAddDefault(distances, (current.coordinate, current.direction), out _);
+            foreach (var edge in GetNeighbours(matrix, current.coordinate, current.direction))
             {
                 var edgeNode = CollectionsMarshal.GetValueRefOrAddDefault(distances, (edge.Coordinate, edge.orientation), out var edgeExisted);
 
@@ -122,28 +152,19 @@ public class Day16
                 }
             }
         }
-        
-        Assert.Equal(105508, result);
+
+        return 0;
     }
-    //
-    static List<(Coordinate, Distance)> BuildRoute(Dictionary<(Coordinate coordinate, Direction orientation), (Coordinate? previous, Direction previousOrientation, Distance distance)> distances, Coordinate endNode, Direction endOrientation)
+    
+    private static IEnumerable<(Coordinate Coordinate, Distance distance, Direction orientation)> GetNeighbours(Dictionary<Coordinate, char> matrix, Coordinate coordinate, Direction orientation)
     {
-        var route = new List<(Coordinate, Distance)>();
-        Coordinate? prev = endNode;
-        Direction previousOrientation = endOrientation;
-    
-        // Keep examining the previous version until we
-        // get back to the start node
-        while (prev is not null)
+        foreach (var direction in AllDirections)
         {
-            var current = prev;
-            var currentOrientation = previousOrientation;
-            (prev, previousOrientation, var distance) = distances[(current.Value, currentOrientation)];
-            route.Add((current.Value, distance));
+            var movedCoordinate = coordinate.Move(direction);
+            if(matrix[movedCoordinate] is '#') continue;
+                
+            var rotation = Math.Abs(direction - orientation) % 2;
+            yield return (movedCoordinate, rotation * 1000 + 1, direction);
         }
-    
-        // reverse the route
-        route.Reverse();
-        return route;
     }
 }
