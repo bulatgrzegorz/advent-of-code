@@ -29,14 +29,6 @@ public class Day16
     
     public enum Direction { Up, Left, Down, Right }
     private static readonly Direction[] AllDirections = [Direction.Up, Direction.Down, Direction.Left, Direction.Right];
-
-    private static Dictionary<Direction, Direction> _oppositeOrientation = new()
-    {
-        [Direction.Down] = Direction.Up,
-        [Direction.Up] = Direction.Down,
-        [Direction.Left] = Direction.Right,
-        [Direction.Right] = Direction.Left
-    };
     public readonly record struct Coordinate(int Row, int Col)
     {
         public Coordinate Move(Direction direction) => direction switch
