@@ -26,57 +26,64 @@
     <None Update="Day1\Day1.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day2\Day2.input">
+    <None Update="2024\Day18\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day3\Day3.input">
+    <None Update="2024\Day17\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day4\Day4.input">
+    <None Update="2024\Day16\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day5\Day5.input">
+    <None Update="2024\Day15\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day6\Day6.input">
+    <None Update="2024\Day14\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day7\Day7.input">
+    <None Update="2024\Day13\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day8\Day8.input">
+    <None Update="2024\Day12\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day9\Day9.input">
+    <None Update="2024\Day11\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day10\Day10.input">
+    <None Update="2024\Day10\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day11\Day11.input">
+    <None Update="2024\Day9\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day12\Day12.input">
+    <None Update="2024\Day8\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day13\Day13.input">
+    <None Update="2024\Day7\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day14\Day14.input">
+    <None Update="2024\Day6\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day15\Day15.input">
+    <None Update="2024\Day5\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day16\Day16.input">
+    <None Update="2024\Day4\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day17\Day17.input">
+    <None Update="2024\Day3\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Day18\Day18.input">
+    <None Update="2024\Day2\in.input">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="2024\Day1\in.input">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="2024\" />
   </ItemGroup>
 
 </Project>
