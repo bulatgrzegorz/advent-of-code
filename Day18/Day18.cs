@@ -57,24 +57,26 @@ public class Day18
         var start = new Coordinate(0, 0);
         var end = new Coordinate(rows - 1, cols - 1);
         var input = File.ReadAllText(InputFile);
-        var walls = new HashSet<Coordinate>();
-        Coordinate result = default; 
+        var walls = new List<Coordinate>();
         foreach (Match match in Regex.Matches(input, @"(\d+),(\d+)"))
         {
             var row = int.Parse(match.Groups[1].Value);
             var col = int.Parse(match.Groups[2].Value);
-
-            var wall = new Coordinate(row, col); 
-            walls.Add(wall);
-
-            if (BreadthFirstSearch(start, walls, end)) continue;
             
-            result = wall;
-            break;
+            walls.Add(new(row, col));
         }
-
         
-        Assert.Equal(new Coordinate(6, 36), result);
+        var (lo, hi) = (0, walls.Count);
+        while (hi - lo > 1) {
+            var m = (lo + hi) / 2;
+            if (!BreadthFirstSearch(start, walls.Take(m).ToHashSet(), end)) {
+                hi = m;
+            } else {
+                lo = m;
+            }
+        }
+        
+        Assert.Equal(new Coordinate(6, 36), walls[lo]);
     }
 
     private bool BreadthFirstSearch(Coordinate start, HashSet<Coordinate> walls, Coordinate end)
