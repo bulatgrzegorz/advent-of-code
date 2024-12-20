@@ -153,7 +153,7 @@ public class Day11
         {
             tree.Left = new Tree(tree.Value * 2024, tree.Generation + 1);
         }
-            
+        
         Traverse(tree.Left, stoneTreeHeads, generations);
         Traverse(tree.Right, stoneTreeHeads, generations);
     }
