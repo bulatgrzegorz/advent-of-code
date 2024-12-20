@@ -37,6 +37,8 @@ public class Day20
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
 
+        public override string ToString() => $"({Row},{Col})";
+
         public bool Move(Direction direction, int rows, int cols, out Coordinate moved)
         {
             moved = direction switch
@@ -76,18 +78,11 @@ public class Day20
         var walls = matrix.Where(x => x.Value is '#').Select(x => x.Key).ToFrozenSet();
 
         var result = 0L;
-        var res = new Dictionary<int, int>();
         var baseDistance = Dijkstra(walls, start, end);
-        foreach (var cheatPosition in cheatsPositions)
+        foreach (var cheatPosition in cheatsPositions.Distinct())
         {
             var wallsWithoutCheat = walls.Except([cheatPosition]).ToFrozenSet();
             var distanceWithCheat = Dijkstra(wallsWithoutCheat, start, end);
-            
-            var dif = baseDistance - distanceWithCheat;
-            if (!res.TryAdd(dif, 1))
-            {
-                res[dif] += 1;
-            }
             
             if (distanceWithCheat <= baseDistance - 100)
             {
@@ -95,9 +90,71 @@ public class Day20
             }
         }
         
-        //664 to low
-        //1289 to low
         Assert.Equal(1321, result);
+    }
+    
+    [Fact]
+    public void Second()
+    { 
+        var input = InputHelper.GetInputLines().Select(x => x.ToCharArray()).ToArray();
+        
+        Dictionary<Coordinate, char> matrix = [];
+        for (var r = 0; r < input.Length; r++)
+        {
+            for (var c = 0; c < input[0].Length; c++)
+            {
+                matrix.Add(new Coordinate(r, c), input[r][c]);
+            }
+        }
+
+        Coordinate start = matrix.First(x => x.Value == 'S').Key;
+        Coordinate end = matrix.First(x => x.Value == 'E').Key;
+        
+        var walls = matrix.Where(x => x.Value is '#').Select(x => x.Key).ToFrozenSet();
+
+        var baseDistance = Dijkstra(walls, start, end);
+        var threshold = 100;
+        var save = baseDistance - threshold;
+        
+        var notWalls = matrix.Where(x => x.Value is not '#').Select(x => x.Key).ToHashSet();
+        var ll = 0;
+        
+        var cache = new Dictionary<(Coordinate, Coordinate), int>();
+        foreach (var notWall in notWalls)
+        {
+            if (!cache.TryGetValue((start, notWall), out var startToCheatBeginning))
+            {
+                startToCheatBeginning = Dijkstra(walls, start,  notWall);
+                cache[(start, notWall)] = startToCheatBeginning;
+            }
+            
+            foreach (var other in notWalls.Where(x => x != notWall))
+            {
+                var cheatDist = ManhattanDistance(other, notWall);
+                
+                if(cheatDist is > 20 or < 1) continue;
+                if(startToCheatBeginning + cheatDist > save) continue;
+                
+                if (!cache.TryGetValue((end, other), out var endToCheatEnd))
+                {
+                    var man = ManhattanDistance(end, other);
+                    if(startToCheatBeginning + cheatDist + man > save) continue;
+                    endToCheatEnd = Dijkstra(walls, end,  other);
+                    cache[(end, other)] = endToCheatEnd;
+                }
+                
+                if(startToCheatBeginning + cheatDist + endToCheatEnd > save) continue;
+
+                ll++;
+            }
+        }
+        
+        Assert.Equal(971737, ll);
+    }
+
+    private static int ManhattanDistance(Coordinate start, Coordinate end)
+    {
+        return Math.Abs(start.Row - end.Row) + Math.Abs(start.Col - end.Col);
     }
 
     private IEnumerable<Coordinate> FindAllCheats(Dictionary<Coordinate, char> matrix, int rows, int cols)
@@ -139,18 +196,17 @@ public class Day20
             var current = queue.Dequeue();
             
             if (current == end) return distances[current].distance;
-            
-            var (_, currentNodeDistance) = CollectionsMarshal.GetValueRefOrAddDefault(distances, current, out _);
+            var (_, currentDistance) = CollectionsMarshal.GetValueRefOrAddDefault(distances, current, out _);
             foreach (var edge in GetNeighbours(walls, current))
             {
-                var edgeNode = CollectionsMarshal.GetValueRefOrAddDefault(distances, edge.Coordinate, out var edgeExisted);
+                ref var edgeNode = ref CollectionsMarshal.GetValueRefOrAddDefault(distances, edge.Coordinate, out var edgeExisted);
 
-                var newDistance = currentNodeDistance + edge.distance;
+                var newDistance = currentDistance + edge.distance;
 
                 if (!edgeExisted || newDistance < edgeNode.distance)
                 {
-                    distances[edge.Coordinate] = (current, newDistance);
-
+                    edgeNode = (current, newDistance);
+                    
                     queue.Remove(edge.Coordinate, out _, out _);
                     queue.Enqueue(edge.Coordinate, newDistance);
                 }
