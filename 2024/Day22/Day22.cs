@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using Xunit;
 using PriceChange = (int D1, int D2, int D3, int D4);
@@ -23,15 +22,15 @@ public class Day22
     }
     
     [Fact]
-    public void Example()
+    public void Second()
     {
         var buyerSecrets = InputHelper.GetInputLines().Select(long.Parse).ToArray();
         var buyersPriceChanges = new FrozenDictionary<PriceChange, int>[buyerSecrets.Length];
 
-        var prices = new int[2000];
-        for (var b = 0; b < buyerSecrets.Length; b++)
+        Span<int> prices = new int[2000];
+
+        foreach (var (index, buyerSecret) in buyerSecrets.Index())
         {
-            var buyerSecret = buyerSecrets[b];
             prices[0] = LastDigit(buyerSecret);
             var previous = buyerSecret;
             for (var i = 1; i < prices.Length; i++)
@@ -42,7 +41,7 @@ public class Day22
                 (previous, prices[i]) = (secret, price);
             }
 
-            buyersPriceChanges[b] = CalculatePriceChanges(prices);
+            buyersPriceChanges[index] = CalculatePriceChanges(prices);
         }
 
         var alreadyTriedPriceChanges = new HashSet<PriceChange>();
@@ -68,7 +67,7 @@ public class Day22
         Assert.Equal(1455, finalResult);
     }
     
-    private static FrozenDictionary<PriceChange, int> CalculatePriceChanges(int[] prices)
+    private static FrozenDictionary<PriceChange, int> CalculatePriceChanges(Span<int> prices)
     {
         Dictionary<PriceChange, int> result = [];
         for (var i = 4; i < prices.Length; i++)
