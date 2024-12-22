@@ -4,6 +4,7 @@ namespace adventOfCode._2024.Day21;
 
 public class Day21
 {
+    //Known optimal paths between directional buttons. Some are omitted, as we know that others are faster any time (like A -> <, we are not using <v<)
     private static readonly Dictionary<char, Dictionary<char, string[]>> OptimalDirectionalPaths = new()
     {
         ['A'] = new()
@@ -12,7 +13,7 @@ public class Day21
             ['^'] = ["<"],
             ['>'] = ["v"],
             ['v'] = ["<v", "v<"],
-            ['<'] = ["v<<", "<v<"],
+            ['<'] = ["v<<"],
         },
         ['^'] = new()
         {
@@ -32,7 +33,7 @@ public class Day21
         },
         ['<'] = new()
         {
-            ['A'] = [">>^", ">^>"],
+            ['A'] = [">>^"],
             ['^'] = [">^"],
             ['>'] = [">>"],
             ['v'] = [">"],
@@ -50,10 +51,12 @@ public class Day21
     
     private readonly record struct Point(int Row, int Col)
     {
+        //Path between buttons on numeric keyboard
         public static IEnumerable<Move[]> GetMoves(Point start, Point end)
         {
             var diffVector = end - start;
 
+            //if we might cross empty space on 3,0 - we just ignore this road and take moves up at first
             if (start.Row == 3 && end.Col == 0)
             {
                 yield return 
@@ -64,6 +67,7 @@ public class Day21
                 yield break;
             }
 
+            //opposite, if we might cross empty space, but going in reverse, we will first take moves right
             if (start.Col == 0 && end.Row == 3)
             {
                 yield return 
@@ -74,6 +78,7 @@ public class Day21
                 yield break;
             }
             
+            //otherwise we will test both paths
             yield return 
             [
                 ..Enumerable.Repeat(diffVector.Row > 0 ? Move.Down : Move.Up, int.Abs(diffVector.Row)),
@@ -101,7 +106,7 @@ public class Day21
         [4] = 'A'
     };
 
-    private readonly Point[] Numerics =
+    private readonly Point[] _numerics =
     [
         new(3, 1), 
         new(2, 0), new(2, 1), new(2, 2), 
@@ -113,114 +118,108 @@ public class Day21
     [Fact]
     private void First()
     {
-        var example = """
-                      029A
-                      980A
-                      179A
-                      456A
-                      379A
-                      """;
-
-        var res = InputHelper.GetInputLines().Select(NewMethod).Sum();
-        
-        // var res = NewMethod("456A");
-        // var res = example.Split(Environment.NewLine).Select(NewMethod).Sum();
-        // var res = NewMethod(example);
-        
+        var res = InputHelper.GetInputLines().Select(x => NewMethod(x, 2)).Sum();
+     
         Assert.Equal(136780, res);
     }
-
-    private int NewMethod(string example)
+    
+    [Fact]
+    private void Second()
     {
+        var res = InputHelper.GetInputLines().Select(x => NewMethod(x, 25)).Sum();
+     
+        Assert.Equal(167538833832712, res);
+    }
+
+    private long NewMethod(string input, int robotsDepth)
+    {
+        var result = 0L;
+        
         var previousNumeric = 10; //A
-        var previousDirectionalFirst = 4;  //A
-        var previousDirectionalSecond = 4;  //A
-        var previous = 'A';
-        // var previous2 = 'A';
-
-        var resultF = 0;
-        var kk = 0;
-        for (int i = 0; i < example.Length; i++)
+        foreach (var inputChar in input)
         {
-            var numeric = example[i] is 'A' ? 10 : example[i] - '0';
-            
-            // Console.WriteLine($"Numeric: {numeric}, previous: {previousNumeric}");
-            var k = 0;
-            var smallestYet = int.MaxValue;
-            foreach (var numericPathCandidate in Point.GetMoves(Numerics[previousNumeric], Numerics[numeric]))
-            {
-                var result = 0;
-                // Console.WriteLine($"    Numeric candidate {k}");
-                Move[] numericMoves = [..numericPathCandidate, (Move)4];
+            var numeric = inputChar is 'A' ? 10 : inputChar - '0';
 
+            var shortestRobotsMovePath = long.MaxValue;
+            foreach (var numericPathCandidate in Point.GetMoves(_numerics[previousNumeric], _numerics[numeric]))
+            {
+                var robotsCandidatePathResult = 0L;
+                Move[] numericMoves = [..numericPathCandidate, (Move)4];
                 
+                var robotsPreviousMove = 'A';
                 foreach (var numericMove in numericMoves.Select(x => MoveToChar[(int)x]))
                 {
-                    // Console.WriteLine($"         Numeric move: {numericMove}, previous: {previous}");
-                    var possiblePaths = OptimalDirectionalPaths[previous][numericMove];
-
+                    robotsCandidatePathResult += Step(numericMove, 0, robotsDepth - 1, robotsPreviousMove, []);
                     
-                    var smallestYet2 = int.MaxValue;
-                    
-                    foreach (var (i1, possiblePath) in possiblePaths.Index())
-                    {
-                        // Console.WriteLine($"            Directional path [{i1}]: {possiblePath}");
-                        //
-                        // Console.WriteLine($"kk: {kk++}");
-                        var step = Step(possiblePath);
-                        
-                        if (step < smallestYet2)
-                        {
-                            smallestYet2 = step;
-                        }
-                    }
-
-                    // previous2 = smallestYet2;
-
-                    // Console.WriteLine($"            Directional path: final length: {smallestYet2}. Finished on: {previous2}, path: {smallestYet2}]");
-                    result += smallestYet2;
-                    previous = numericMove;
+                    robotsPreviousMove = numericMove;
                 }
                 
-                if (result < smallestYet)
+                if (robotsCandidatePathResult < shortestRobotsMovePath)
                 {
-                    smallestYet = result;
+                    shortestRobotsMovePath = robotsCandidatePathResult;
                 }
             }
             
-            resultF += smallestYet;
+            result += shortestRobotsMovePath;
             
             previousNumeric = numeric;
         }
 
-        Console.WriteLine(resultF);
+        Console.WriteLine(result);
         
-        Console.WriteLine(string.Join("", example));
+        Console.WriteLine(string.Join("", input));
 
-        return int.Parse(example.Where(char.IsDigit).ToArray()) * resultF;
+        return long.Parse(input.Where(char.IsDigit).ToArray()) * result;
     }
 
-    private static int Step(string possiblePath)
+    private static long Step(char move, int level, int maxLevel, char previous, Dictionary<(char, int, char), long> cache)
     {
-        var result = 0;
-        var previous = 'A';
-        foreach (var move in (char[])[..possiblePath, 'A'])
+        long result = 0;
+        var possiblePaths = OptimalDirectionalPaths[previous][move];
+        if (level < maxLevel)
         {
-            var paths = OptimalDirectionalPaths[previous][move];
-            if (paths is not [])
+            if (possiblePaths.Length is 0) return 1;
+
+            var stepMin = long.MaxValue;
+            foreach (var possiblePath in possiblePaths)
             {
-                var shortest = paths.OrderBy(x => x.Length).First();
-                
-                result += shortest.Length + 1;
-            }
-            else
-            {
-                result += 1;
+                char[] possiblePathChars = [..possiblePath, 'A'];
+                var stepPrevious = 'A';
+                var stepResult = 0L;
+                foreach (var c in possiblePathChars)
+                {
+                    if (!cache.TryGetValue((c, level + 1, stepPrevious), out var cachedResult))
+                    {
+                        var r = Step(c, level + 1, maxLevel, stepPrevious, cache);
+                        cache.Add((c, level + 1, stepPrevious), r);
+                        stepResult += r;
+                    }
+                    else
+                    {
+                        stepResult += cachedResult;
+                    }
+
+                    stepPrevious = c;
+                }
+
+                if (stepResult < stepMin) stepMin = stepResult;
             }
 
-            previous = move;
+            return stepMin;
         }
-        
+
+        if (possiblePaths is not [])
+        {
+            //we are just taking any at this stage, we know in fact that even when multiple - all will be same lenght  
+            var shortest = possiblePaths[0];
+
+            result += shortest.Length + 1;
+        }
+        else
+        {
+            result += 1;
+        }
+
         return result;
     }
 }
