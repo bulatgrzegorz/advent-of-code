@@ -110,10 +110,8 @@ public class Day21
         new(3, 2)
     ];
 
-    private readonly Point[] Directionals = [new(0, 1), new(1, 0), new(1, 1), new(1, 2), new(0, 2)];
-
     [Fact]
-    private void Example()
+    private void First()
     {
         var example = """
                       029A
@@ -138,7 +136,7 @@ public class Day21
         var previousDirectionalFirst = 4;  //A
         var previousDirectionalSecond = 4;  //A
         var previous = 'A';
-        var previous2 = 'A';
+        // var previous2 = 'A';
 
         var resultF = 0;
         var kk = 0;
@@ -146,42 +144,41 @@ public class Day21
         {
             var numeric = example[i] is 'A' ? 10 : example[i] - '0';
             
-            Console.WriteLine($"Numeric: {numeric}, previous: {previousNumeric}");
+            // Console.WriteLine($"Numeric: {numeric}, previous: {previousNumeric}");
             var k = 0;
             var smallestYet = int.MaxValue;
             foreach (var numericPathCandidate in Point.GetMoves(Numerics[previousNumeric], Numerics[numeric]))
             {
                 var result = 0;
-                Console.WriteLine($"    Numeric candidate {k}");
+                // Console.WriteLine($"    Numeric candidate {k}");
                 Move[] numericMoves = [..numericPathCandidate, (Move)4];
 
                 
                 foreach (var numericMove in numericMoves.Select(x => MoveToChar[(int)x]))
                 {
-                    Console.WriteLine($"         Numeric move: {numericMove}, previous: {previous}");
+                    // Console.WriteLine($"         Numeric move: {numericMove}, previous: {previous}");
                     var possiblePaths = OptimalDirectionalPaths[previous][numericMove];
 
                     
-                    var smallestYet2 = (int.MaxValue, '\0', string.Empty);
+                    var smallestYet2 = int.MaxValue;
                     
                     foreach (var (i1, possiblePath) in possiblePaths.Index())
                     {
-                        Console.WriteLine($"            Directional path [{i1}]: {possiblePath}");
+                        // Console.WriteLine($"            Directional path [{i1}]: {possiblePath}");
+                        //
+                        // Console.WriteLine($"kk: {kk++}");
+                        var step = Step(possiblePath);
                         
-                        var previous2_2 = previous2;
-                        Console.WriteLine($"kk: {kk++}");
-                        var step = Step(possiblePath, previous2_2);
-                        
-                        if (step.length < smallestYet2.MaxValue)
+                        if (step < smallestYet2)
                         {
                             smallestYet2 = step;
                         }
                     }
 
-                    previous2 = smallestYet2.Item2;
+                    // previous2 = smallestYet2;
 
-                    Console.WriteLine($"            Directional path: final length: {smallestYet2}. Finished on: {previous2}, path: {smallestYet2.Item2}]");
-                    result += smallestYet2.MaxValue;
+                    // Console.WriteLine($"            Directional path: final length: {smallestYet2}. Finished on: {previous2}, path: {smallestYet2}]");
+                    result += smallestYet2;
                     previous = numericMove;
                 }
                 
@@ -203,31 +200,27 @@ public class Day21
         return int.Parse(example.Where(char.IsDigit).ToArray()) * resultF;
     }
 
-    private static (int length, char finishedAt, string path) Step(string possiblePath, char previous2)
+    private static int Step(string possiblePath)
     {
         var result = 0;
-        var path = string.Empty;
+        var previous = 'A';
         foreach (var move in (char[])[..possiblePath, 'A'])
         {
-            Console.WriteLine($"                     Directional move: {move}, previous: {previous2}");
-            var paths = OptimalDirectionalPaths[previous2][move];
+            var paths = OptimalDirectionalPaths[previous][move];
             if (paths is not [])
             {
                 var shortest = paths.OrderBy(x => x.Length).First();
-                Console.WriteLine($"                       Final directional path: {shortest}");
-                             
+                
                 result += shortest.Length + 1;
-                path += $"{shortest}A";
             }
             else
             {
                 result += 1;
-                path = "A";
             }
 
-            previous2 = move;
+            previous = move;
         }
         
-        return (result, previous2, path);
+        return result;
     }
 }
