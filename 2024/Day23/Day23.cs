@@ -36,6 +36,12 @@ public class Day23
             allEdges.AddOrUpdate(v.Key, s => [s, ..v], (s, vv) => [..vv, ..v]);
         }
 
+        // var cliqueSize = 13;
+        // foreach (var (node, edges) in allEdges)
+        // {
+        //     allEdges.Remove(node);
+        // }
+
         string[] currentLongest = [];
         foreach (var (key, values) in allEdges)
         {
