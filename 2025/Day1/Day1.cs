@@ -26,10 +26,13 @@ public class Day1
         var zeros = 0;
         foreach (var (s, x) in input.Select(x => (x[0], int.Parse(x[1..]))))
         {
+            var rotation = x % 100;
+            
             currentPosition = s switch
             {
-                'R' => (currentPosition + x) % 100,
-                'L' => currentPosition < x ? 100 - (x - currentPosition) : currentPosition - x,
+                'R' => (currentPosition + rotation) % 100,
+                'L' when currentPosition < rotation => 100 - (rotation - currentPosition),
+                'L' => currentPosition - rotation,
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -53,7 +56,8 @@ public class Day1
             currentPosition = s switch
             {
                 'R' => (currentPosition + rotation) % 100,
-                'L' => currentPosition < rotation ? 100 - (rotation - currentPosition) : currentPosition - rotation,
+                'L' when currentPosition < rotation => 100 - (rotation - currentPosition),
+                'L' => currentPosition - rotation,
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -77,7 +81,8 @@ public class Day1
             var newCurrentPosition = s switch
             {
                 'R' => (currentPosition + rotation) % 100,
-                'L' => currentPosition < rotation ? 100 - (rotation - currentPosition) : currentPosition - rotation,
+                'L' when currentPosition < rotation => 100 - (rotation - currentPosition),
+                'L' => currentPosition - rotation,
                 _ => throw new ArgumentOutOfRangeException()
             };
             
