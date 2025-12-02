@@ -28,8 +28,7 @@ public class Day2
             {
                 if (currentSpan.Length % 2 == 0)
                 {
-                    if (currentSpan[..(currentSpan.Length / 2)]
-                        .Equals(currentSpan[(currentSpan.Length / 2)..], StringComparison.Ordinal))
+                    if (currentSpan[..(currentSpan.Length / 2)].SequenceEqual(currentSpan[(currentSpan.Length / 2)..]))
                     {
                         sum += current;
                     }
@@ -91,7 +90,7 @@ public class Day2
             var currentSpan = ranges.startS.AsSpan();
             while (current <= ranges.end)
             {
-                for (var i = 1; i <= currentSpan.Length / 2; i++)
+                for (var i = 1; i <= currentSpan.Length / 2; i++) // we are iterating just to middle point, there is no point to go further as you will not be able to find pair with such length
                 {
                     if(currentSpan.Length % i != 0) continue; //if we cannot fit our chunk in number evenly, quick fail
 
