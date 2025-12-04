@@ -4,8 +4,6 @@ namespace adventOfCode._2024.Day15;
 
 public class Day15
 {
-    private const string InputFile = "Day15/Day15.input";
-
     private enum Direction { Up, Down, Left, Right }
     private readonly record struct Coordinate(int Row, int Col)
     {
