@@ -137,7 +137,7 @@ public class Day4
             }
         }
 
-        Assert.Equal(1384, sum);
+        Assert.Equal(8013, sum);
     }
     
     private static Map GetMap(string[] input)
