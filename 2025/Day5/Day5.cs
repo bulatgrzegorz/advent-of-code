@@ -18,12 +18,11 @@ public class Day5
                                         32
                                         """;
 
-    public readonly record struct Range(long Start, long End)
+    private readonly record struct Range(long Start, long End)
     {
         public bool IsInRange(long value) => value >= Start && value <= End;
 
         public bool Intersects(Range other) => End >= other.Start && Start <= other.End;
-            
     };
     
     [Fact]
@@ -77,7 +76,7 @@ public class Day5
     [Fact]
     public void Second()
     {
-        HashSet<Range> ranges = new();
+        HashSet<Range> ranges = [];
         
         foreach (var line in InputHelper.ReadInputLines().TakeWhile(x => !string.IsNullOrEmpty(x)))
         {
@@ -88,7 +87,7 @@ public class Day5
         bool anyOther;
         do
         {
-            var newRanges = new HashSet<Range>();
+            HashSet<Range> newRanges = [];
             anyOther = false;
             foreach (var range in ranges)
             {
@@ -101,11 +100,10 @@ public class Day5
                 
                 anyOther = true;
                 
-                newRanges.Add(new Range(allIntersecting.MinBy(x => x.Start).Start, allIntersecting.MaxBy(x => x.End).End));
+                newRanges.Add(new Range(allIntersecting.Min(x => x.Start), allIntersecting.Max(x => x.End)));
             }
             
             ranges = newRanges;
-            if(!anyOther) break;
         }
         while (anyOther);
 
@@ -114,5 +112,3 @@ public class Day5
         Assert.Equal(344378119285354, sum);
     }
 }
-
-//
