@@ -28,8 +28,8 @@ public class Day5
     [Fact]
     public void Example()
     {
-        List<Range> ranges = new();
-        List<long> ids = new();
+        List<Range> ranges = [];
+        List<long> ids = [];
         foreach (var line in ExampleInput.Split(Environment.NewLine).Select(x => x.ReplaceLineEndings(string.Empty)))
         {
             if(string.IsNullOrEmpty(line)) continue;
@@ -52,8 +52,8 @@ public class Day5
     [Fact]
     public void First()
     {
-        List<Range> ranges = new();
-        List<long> ids = new();
+        List<Range> ranges = [];
+        List<long> ids = [];
         foreach (var line in InputHelper.ReadInputLines())
         {
             if(string.IsNullOrEmpty(line)) continue;
