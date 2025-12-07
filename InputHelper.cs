@@ -4,6 +4,19 @@ namespace adventOfCode;
 
 public static class InputHelper
 {
+    extension(string input)
+    {
+        public IEnumerable<string> GetExampleInput()
+        {
+            return input.Split(Environment.NewLine).Select(x => x.ReplaceLineEndings(string.Empty));
+        }
+
+        public string[] GetExampleInputLines()
+        {
+            return input.Split(Environment.NewLine).Select(x => x.ReplaceLineEndings(string.Empty)).ToArray();
+        }
+    }
+
     public static string GetInput([CallerFilePath] string callerFilePath = "")
     {
         var inputPath = GetInputPath(callerFilePath);

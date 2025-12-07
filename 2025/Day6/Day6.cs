@@ -17,7 +17,6 @@ public class Day6
     public void First()
     {
         var lines = InputHelper.GetInputLines();
-        // var lines = ExampleInput.Split(Environment.NewLine).Select(x => x.ReplaceLineEndings(string.Empty)).ToList();
         
         var numberArrays = lines[..^1].Select(x => Regex.Matches(x, "\\d+").Select(y => int.Parse(y.Value)).ToArray()).ToArray();
         
@@ -41,7 +40,6 @@ public class Day6
     public void Second()
     {
         var lines = InputHelper.GetInputLines();
-        // var lines = ExampleInput.Split(Environment.NewLine);
         var characters = lines.Select(x => x.ReplaceLineEndings(string.Empty).ToCharArray()).ToArray();
         
         var columns = new List<long>[lines[^1].Count(x => x is '+' or '*')];

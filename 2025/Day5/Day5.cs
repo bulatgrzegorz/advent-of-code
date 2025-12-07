@@ -30,7 +30,7 @@ public class Day5
     {
         List<Range> ranges = [];
         List<long> ids = [];
-        foreach (var line in ExampleInput.Split(Environment.NewLine).Select(x => x.ReplaceLineEndings(string.Empty)))
+        foreach (var line in ExampleInput.GetExampleInput())
         {
             if(string.IsNullOrEmpty(line)) continue;
             var parts = line.Split('-');
