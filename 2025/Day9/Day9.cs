@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Numerics;
 using Xunit;
 
@@ -113,21 +113,9 @@ public class Day9
             return inside;
         }
 
-        ConcurrentDictionary<(long, long), bool> cache = [];
-        HashSet<(long, long)> pi = [];
-        
-        int len = titles.Length;
-        for (int k = 0; k < len; k++)
-        {
-            var a = titles[k];
-            var b = titles[(k + 1) % len];
+        Dictionary<(long, long), bool> cache = [];
+        var shapeEdges = CalculateEdges(titles);
 
-            foreach (var (x, y) in a.Points(b))
-            {
-                pi.Add((x, y));
-            }
-        }
-        
         var maxAreas = titles
             .SelectMany(x => titles.Where(o => x != o), (x, y) => (x, y))
             .Select(pair => (pair.x, pair.y, area: pair.x.Area(pair.y)))
@@ -155,13 +143,26 @@ public class Day9
             {
                 var (point, until, iter) = (t[0], t[1], t[2]);
                 
-                var touched = pi.Contains(point);
+                var touched = shapeEdges.Contains(point);
                 if (!touched)
                 {
-                    if (!cache.GetOrAdd(point, Contains(titles, point)))
+                    if (cache.TryGetValue(point, out var isInside))
                     {
-                        isFilled = false;
-                        break;
+                        if (!isInside)
+                        {
+                            isFilled = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        var x = Contains(titles, point);
+                        cache.Add(point, x);
+                        if (!x)
+                        {
+                            isFilled = false;
+                            break; 
+                        }
                     }
                 }
                 
@@ -170,7 +171,7 @@ public class Day9
                     point += iter;
                     if(point.c > until.c || point.r > until.r) break;
 
-                    var nowTouched = pi.Contains(point);
+                    var nowTouched = shapeEdges.Contains(point);
                     if (touched == nowTouched)
                     {
                         continue;
@@ -178,9 +179,18 @@ public class Day9
                     
                     touched = nowTouched;
                     if(touched) continue;
-                    
-                    if (cache.GetOrAdd(point, Contains(titles, point))) continue;
-                        
+
+                    if (cache.TryGetValue(point, out var isInside))
+                    {
+                        if(isInside) continue;
+                    }
+                    else
+                    {
+                        var x = Contains(titles, point);
+                        cache.Add(point, x);
+                        if(x) continue;
+                    }
+
                     isFilled = false;
                     break;
                 }
@@ -195,6 +205,26 @@ public class Day9
         }
 
         Assert.Equal(1525241870, maxArea);
+    }
+
+    private static FrozenSet<(long, long)> CalculateEdges((long col, long row)[] titles)
+    {
+        HashSet<(long, long)> pi = [];
+        
+        var len = titles.Length;
+        for (var k = 0; k < len; k++)
+        {
+            var a = titles[k];
+            var b = titles[(k + 1) % len];
+
+            foreach (var (x, y) in a.Points(b))
+            {
+                pi.Add((x, y));
+            }
+        }
+
+        var shapeEdges = pi.ToFrozenSet();
+        return shapeEdges;
     }
 }
 
